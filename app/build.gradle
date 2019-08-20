@@ -1,0 +1,47 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        applicationId "com.clj.blesample"
+        minSdkVersion 18
+        targetSdkVersion 27
+        versionCode 233
+        versionName "2.3.3"
+
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        release {
+            //keytool -genkeypair -alias "GaLauncher" -keyalg "RSA" -keystore "GaLauncher.keystore" -validity 365000
+            storeFile file("../ShenDaBle.keystore")
+            storePassword "123456"
+            keyAlias "GaLauncher"
+            keyPassword "123456"
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    api project(':FastBleLib')
+    implementation files('libs/ormlite-core-5.0.jar')
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+}

@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">ShenDaBLE</string>
+
+    <string name="notifyTitle">Prompt</string>
+    <string name="gpsNotifyMsg">Current mobile phone scanning Bluetooth needs to open the positioning function</string>
+    <string name="setting">Go to settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+
+    <string name="delNotifyMsg">Are you sure you want to delete all your data ? \nThe waiting time for deleting data is about 120 seconds.</string>
+
+    <string name="start_scan">Start scanning</string>
+    <string name="start_send">Start send</string>
+    <string name="start_notify">Start notify</string>
+    <string name="stop_scan">Stop scanning</string>
+    <string name="expand_search_settings">Expand search settings</string>
+    <string name="retrieve_search_settings">Retrieve search settings</string>
+    <string name="connect_fail">connection failed</string>
+    <string name="active_disconnected">disconnect</string>
+    <string name="disconnected">Connection disconnect</string>
+    <string name="please_open_blue">Please turn on Bluetooth first</string>
+    <string name="select_operation_type">Select operation type</string>
+    <string name="characteristic">Characteristic</string>
+    <string name="data_changed">Data changes:</string>
+    <string name="read">Read</string>
+    <string name="write">Write</string>
+    <string name="open_notification">Open notification</string>
+    <string name="close_notification">Close notification</string>
+    <string name="service_list">Service list</string>
+    <string name="characteristic_list">Characteristic list</string>
+    <string name="console">Console</string>
+    <string name="name">Device broadcast name：</string>
+    <string name="mac">MAC:</string>
+    <string name="service">Service</string>
+    <string name="type">Service type (main service)</string>
+    <string name="scan_setting">Below, you can configure the conditions that you need to scan the device, which can be empty</string>
+    <string name="setting_name">Enter a broadcast name for Bluetooth devices, separated by English commas</string>
+    <string name="setting_mac">Enter Bluetooth device MAC</string>
+    <string name="setting_uuid">Enter Bluetooth device UUID, separated by commas in English</string>
+    <string name="input_hex">Please enter the HEX format command</string>
+    <string name="connect">Connect</string>
+    <string name="connected">Connected</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="enter">Show Logs</string>
+
+    <string name="device_status">Device status</string>
+    <string name="delete_data">Delete data</string>
+    <string name="end_uploading">End uploading</string>
+
+    <string name="start_uploading">Start uploading</string>
+    <string name="end_collection">End collection</string>
+    <string name="start_collection">Start collection</string>
+
+    <string name="start_search">Start collection</string>
+    <string name="end_search">End collection</string>
+    <string name="show_mac">Show MAC</string>
+    <string name="show_pin">Show PIN</string>
+    <string name="clean_screen">Clean screen</string>
+
+    <string name="select_dev">select device</string>
+    <string name="select_dir">select directory</string>
+    <string name="start_save">Start Save</string>
+    <string name="stop_save">Stop Save</string>
+
+    <string name="filechoose_app_name">FileDirChoose</string>
+    <string name="filechoose_record">Record</string>
+    <string name="filechoose_stop">Stop</string>
+    <string name="filechoose_description_info">Info</string>
+    <string name="filechoose_permission_request">This sample needs permission for camera and audio recording.</string>
+    <string name="filechoose_camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="filechoose_intro_message">sss</string>
+    <string name="filechoose_already">您已经选中该文件夹</string>
+    <string name="filechoose_sure">确定</string>
+</resources>
