@@ -64,6 +64,8 @@
     <string name="select_dir">选择目录</string>
     <string name="start_save">开始保存</string>
     <string name="stop_save">停止保存</string>
+    <string name="mode_caiyang">采样模式</string>
+    <string name="pinlv_caiyang">采样频率</string>
 
 
 

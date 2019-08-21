@@ -6,6 +6,8 @@
     <string name="setting">Go to settings</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="mode_caiyang">采样模式</string>
+    <string name="pinlv_caiyang">采样频率</string>
 
     <string name="delNotifyMsg">Are you sure you want to delete all your data ? \nThe waiting time for deleting data is about 120 seconds.</string>
 

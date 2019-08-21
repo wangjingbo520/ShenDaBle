@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btn_select_dev;
     private Button btn_select_dir;
     private Button btn_start_save;
+    private Button btn_mode_caiyang;
+    private Button btn_pinlv_caiyang;
 
     private AlertDialog alertDialog2;
 
@@ -108,16 +110,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ScrollView scrollView_log;
 
     private SimpleDateFormat LogSdf = new SimpleDateFormat("HH:mm:ss");
-    private String macFilter ="";
+    private String macFilter = "";
 
-    private Hashtable<String, String> NotifyMsg=new Hashtable<>();
+    private Hashtable<String, String> NotifyMsg = new Hashtable<>();
 
-    public static int bolSaveType=0;
-    public static String strSelectMac="";
-    public static String strFileName="test.data";
-    public static String strdirName="/storage/emulated/0/";
+    public static int bolSaveType = 0;
+    public static String strSelectMac = "";
+    public static String strFileName = "test.data";
+    public static String strdirName = "/storage/emulated/0/";
 
-    public  EditText edtxt_filename;
+    public EditText edtxt_filename;
     public EditText edtxt_select_dir;
 
     public int iMaxDataLen;
@@ -131,16 +133,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final int PATHREQUESTCODE = 44;
 
-        Handler handler = new Handler(){
+
+    private static String[] MODE_CAIYANG = {"Acc+Gyr", "Acc", "Gyr"};
+    private static String[] pinlv = {"50", "100", "150", "200", "250", "300", "350", "400", "450", "500"};
+    private int mode_default = -1;
+    private int pinlv_default = -1;
+    AlertDialog.Builder builder;
+
+    private static String[] MODE_CODE = {"01", "02", "03"};
+    private String data_send = "";
+
+    Handler handler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
             //设置进度条当前值，并将线程对象放入线程队列
-            LogUtil.log(TAG, "[" + TAG + "]  handleMessage" + msg.arg1 );
-            LogUtil.log(TAG, "[" + TAG + "]  handleMessage" + msg.arg2 );
+            LogUtil.log(TAG, "[" + TAG + "]  handleMessage" + msg.arg1);
+            LogUtil.log(TAG, "[" + TAG + "]  handleMessage" + msg.arg2);
 
-            if(msg.arg1==0)
-            {
+            if (msg.arg1 == 0) {
                 progressDialog.setMax(iMaxDataLen);
                 progressDialog.setProgress(iMaxDataLen - iDataLen);
 
@@ -149,13 +160,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     };
 
+    //发送的数据
+    private void sendData() {
+//        PC发MCU：
+//        AA BB CC A1 01/02/03 X1 X2 X3 X4 DD EE
+//        A1：指令号
+//        01：采样陀螺仪
+//        02：采样加速度
+//        03：采样陀螺仪+加速度
+//        X1 X2:采样频率 // 500, 250, 125, 100, 50, 20, 10
+//        X3 X4:ODR   // 500, 250, 125, 100, 50, 20, 10
+//        if (-1 != mode_default && -1 != pinlv_default) {
+//            String data = "AABBCCA1" + String.valueOf(MODE_CODE[mode_default]) +
+//        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-
+        builder = new AlertDialog.Builder(this);
         BleManager.getInstance().init(getApplication());
         BleManager.getInstance()
                 .enableLog(true)
@@ -205,8 +230,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_show_pin:
                 LogUtil.log(TAG, "[" + TAG + "] btn_show_pin ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -218,12 +242,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_start_collection:
                 LogUtil.log(TAG, "[" + TAG + "] btn_show_mac ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                bolSaveType =2;
+                bolSaveType = 2;
                 sendConnectedDevice("aa01");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
@@ -232,12 +255,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_end_collection:
                 LogUtil.log(TAG, "[" + TAG + "] btn_show_mac ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                bolSaveType=0;
+                bolSaveType = 0;
                 sendConnectedDevice("aa02");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
@@ -246,12 +268,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_start_uploading:
                 LogUtil.log(TAG, "[" + TAG + "] btn_start_uploading ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                bolSaveType=2;
+                bolSaveType = 2;
                 sendConnectedDevice("aa03");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
@@ -260,12 +281,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_end_uploading:
                 LogUtil.log(TAG, "[" + TAG + "] btn_end_uploading ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                bolSaveType=0;
+                bolSaveType = 0;
                 sendConnectedDevice("aa04");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
@@ -274,8 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_delete_data:
                 LogUtil.log(TAG, "[" + TAG + "] btn_delete_data ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -307,8 +326,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_device_status:
                 LogUtil.log(TAG, "[" + TAG + "] btn_device_status ");
-                if (bolSaveType==1)
-                {
+                if (bolSaveType == 1) {
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -372,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         R.layout.layout_select_dir, null);
                 dialog.setView(myLoginView);
 
-                edtxt_filename  = myLoginView.findViewById(R.id.edtxt_filename);
+                edtxt_filename = myLoginView.findViewById(R.id.edtxt_filename);
                 edtxt_select_dir = myLoginView.findViewById(R.id.edtxt_select_dir);
                 edtxt_select_dir.setInputType(InputType.TYPE_NULL);
                 // 设置颜色
@@ -386,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
 
-                dialog.setPositiveButton("确定",null);
+                dialog.setPositiveButton("确定", null);
                 /*
                 dialog.setPositiveButton("确定",
                         new DialogInterface.OnClickListener() {
@@ -418,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //dialog.setCancelable(false);
                 //dialog.show();
                 //创建dialog
-                final AlertDialog pwdDialog=dialog.create();
+                final AlertDialog pwdDialog = dialog.create();
                 //dialog点击其他地方不关闭
                 pwdDialog.setCancelable(false);
                 pwdDialog.show();
@@ -428,16 +446,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(View v) {
                         //如果想关闭dialog直接加上下面这句代码就行
                         //pwdDialog.cancel();
-                        if (edtxt_filename.getText().toString().trim().equalsIgnoreCase(""))
-                        {
+                        if (edtxt_filename.getText().toString().trim().equalsIgnoreCase("")) {
                             Toast.makeText(MainActivity.this, "文件名不能为空", Toast.LENGTH_LONG).show();
                             return;
                         }
 
                         strFileName = edtxt_filename.getText().toString().trim();
 
-                        if (edtxt_select_dir.getText().toString().trim().equalsIgnoreCase(""))
-                        {
+                        if (edtxt_select_dir.getText().toString().trim().equalsIgnoreCase("")) {
                             Toast.makeText(MainActivity.this, "目录不能为空", Toast.LENGTH_LONG).show();
                             return;
                         }
@@ -464,23 +480,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_start_save:
                 LogUtil.log(TAG, "[" + TAG + "] btn_start_save ");
-                if (bolSaveType==2)
-                {
+                if (bolSaveType == 2) {
                     Toast.makeText(MainActivity.this, "正在进行通讯！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (strSelectMac.equalsIgnoreCase(""))
-                {
+                if (strSelectMac.equalsIgnoreCase("")) {
                     Toast.makeText(MainActivity.this, "请选择需要保存的设备", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (strFileName.equalsIgnoreCase(""))
-                {
+                if (strFileName.equalsIgnoreCase("")) {
                     Toast.makeText(MainActivity.this, "文件名不能为空", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (strdirName.equalsIgnoreCase(""))
-                {
+                if (strdirName.equalsIgnoreCase("")) {
                     Toast.makeText(MainActivity.this, "目录不能为空", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -491,15 +503,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 lgCurrTime = System.currentTimeMillis();
                 //mHandler.postDelayed(rCheckStop, 1 * 1000);
 
-                if (bolSaveType==0) {
-                    bolSaveType=1;
+                if (bolSaveType == 0) {
+                    bolSaveType = 1;
                     btn_start_save.setText(getString(R.string.stop_save));
                     sendConnectedDevice("aa05");
 
-                    progressDialog=new ProgressDialog(MainActivity.this);
+                    progressDialog = new ProgressDialog(MainActivity.this);
                     progressDialog.setIcon(R.mipmap.ic_launcher);
 
-                    progressDialog.setButton("取消",new DialogInterface.OnClickListener() {
+                    progressDialog.setButton("取消", new DialogInterface.OnClickListener() {
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -511,25 +523,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);//设置进度条对话框//样式（水平，旋转）
                     progressDialog.setCancelable(false);
                     progressDialog.show();
-                }
-                else {
-                    bolSaveType=0;
+                } else {
+                    bolSaveType = 0;
                     btn_start_save.setText(getString(R.string.start_save));
                     sendConnectedDevice("aa06");
                 }
+                break;
+
+            case R.id.btn_mode_caiyang:
+                //采样模式
+                showModeCaiyang();
+                break;
+            case R.id.btn_pinlv_caiyang:
+                //采样频率
+                showPinlvCaiyang();
                 break;
         }
     }
 
 
+    private void showModeCaiyang() {
+        builder.setTitle("采样模式");
+        builder.setSingleChoiceItems(MODE_CAIYANG, mode_default, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mode_default = which;
+                    }
+                }
+        ).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mode_default < 0) {
+                    Toast.makeText(MainActivity.this, "请先选择采样模式", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(MainActivity.this, MODE_CAIYANG[mode_default], Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    private void showPinlvCaiyang() {
+        builder.setTitle("采样频率");
+        builder.setSingleChoiceItems(pinlv, pinlv_default, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        pinlv_default = which;
+                    }
+                }
+        ).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (pinlv_default < 0) {
+                    Toast.makeText(MainActivity.this, "请先选择采样频率", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(MainActivity.this, pinlv[pinlv_default], Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.show();
+    }
+
     private void initData() {
         ChooseFileActivity.enterActivityForResult(this, PATHREQUESTCODE);
     }
 
-
     private void showLogs() {
         //LogUtil.log(TAG, "[" + TAG + "] showLogs ");
-        if (bolSaveType!=1) {
+        if (bolSaveType != 1) {
             BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
 
             StringBuilder sb = new StringBuilder();
@@ -601,6 +677,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_start_save = (Button) findViewById(R.id.btn_start_save);
         btn_start_save.setText(getString(R.string.start_save));
         btn_start_save.setOnClickListener(this);
+
+        btn_mode_caiyang = (Button) findViewById(R.id.btn_mode_caiyang);
+        // btn_start_save.setText(getString(R.string.start_save));
+        btn_mode_caiyang.setOnClickListener(this);
+
+        btn_pinlv_caiyang = (Button) findViewById(R.id.btn_pinlv_caiyang);
+        // btn_start_save.setText(getString(R.string.start_save));
+        btn_pinlv_caiyang.setOnClickListener(this);
 
         img_loading = (ImageView) findViewById(R.id.img_loading);
         operatingAnim = AnimationUtils.loadAnimation(this, R.anim.rotate);
@@ -675,8 +759,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             LogUtil.log(TAG, "[" + TAG + "] sendConnectedDevice " + bleDevice.getName());
             LogUtil.log(TAG, "[" + TAG + "] sendConnectedDevice " + bleDevice.getMac());
-            if (strSendCmd.equalsIgnoreCase("aa05")||strSendCmd.equalsIgnoreCase("aa06"))
-            {
+            if (strSendCmd.equalsIgnoreCase("aa05") || strSendCmd.equalsIgnoreCase("aa06")) {
                 //只对选中的设备进行命令发送
                 if (!strSelectMac.equalsIgnoreCase(bleDevice.getMac())) {
                     continue;
@@ -700,7 +783,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             int charaProp = characteristic.getProperties();
                             if ((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
                                 LogUtil.log(TAG, "[" + TAG + "] BluetoothGattService service characteristic  Write ");
-                                BluetoothGattCharacteristicwrite(bleDevice, characteristic,strSendCmd);
+                                BluetoothGattCharacteristicwrite(bleDevice, characteristic, strSendCmd);
                             }
                         }
                     }
@@ -745,7 +828,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void BluetoothGattCharacteristicwrite(BleDevice bleDevice,BluetoothGattCharacteristic characteristic,String hex) {
+    private void BluetoothGattCharacteristicwrite(BleDevice bleDevice, BluetoothGattCharacteristic characteristic, String hex) {
         final BluetoothGattCharacteristic characteristicinner = characteristic;
         final BleDevice bleDeviceinner = bleDevice;
         final String sendHex = hex;
@@ -769,7 +852,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                                 BleLogsItem _BleLogsItem = new BleLogsItem();
                                 _BleLogsItem.setLogMac(bleDeviceinner.getMac());
-                                _BleLogsItem.setLogText(sendHex +" 数据发送成功");
+                                _BleLogsItem.setLogText(sendHex + " 数据发送成功");
                                 _BleLogsItem.setLogTime(System.currentTimeMillis());
                                 _BleLogsItemDao.add(_BleLogsItem);
                                 showLogs();
@@ -788,7 +871,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                                 BleLogsItem _BleLogsItem = new BleLogsItem();
                                 _BleLogsItem.setLogMac(bleDeviceinner.getMac());
-                                _BleLogsItem.setLogText(sendHex +" 数据发送失败");
+                                _BleLogsItem.setLogText(sendHex + " 数据发送失败");
                                 _BleLogsItem.setLogTime(System.currentTimeMillis());
                                 _BleLogsItemDao.add(_BleLogsItem);
                                 showLogs();
@@ -798,8 +881,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
     }
 
-    private void BluetoothGattCharacteristicNotify(BleDevice bleDevice,BluetoothGattCharacteristic characteristic)
-    {
+    private void BluetoothGattCharacteristicNotify(BleDevice bleDevice, BluetoothGattCharacteristic characteristic) {
         //final BluetoothGattCharacteristic characteristicinner = characteristic;
         //final BleDevice bleDeviceinner  = bleDevice;
         BleManager.getInstance().notify(
@@ -829,7 +911,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     @Override
-                    public void onNotifyFailure(String strMac,final BleException exception) {
+                    public void onNotifyFailure(String strMac, final BleException exception) {
                         LogUtil.log(TAG, "[" + TAG + "] " + strMac + "BluetoothGattCharacteristicNotify onNotifyFailure " + exception.toString());
                         //text_logs.append(bleDeviceinner.getMac() + " " + " 设备监听失败\n");
                         BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
@@ -849,7 +931,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     @Override
-                    public void onCharacteristicChanged(String strMac,byte[] data) {
+                    public void onCharacteristicChanged(String strMac, byte[] data) {
                         //LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged " + HexUtil.formatHexString(data, true));
                         //text_logs.append(bleDeviceinner.getMac() + " " + " 设备接收数据" + HexUtil.formatHexString(characteristicinner.getValue(), true) + "\n");
 
@@ -858,44 +940,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged 11 " + strRet);
 
                         String strCmd;
-                        if (strRet.length()>=5) {
+                        if (strRet.length() >= 5) {
                             strCmd = strRet.substring(0, 5);
-                        }
-                        else
-                        {
-                            strCmd="";
+                        } else {
+                            strCmd = "";
                         }
 
-                        if (bolSaveType==1)
-                        {
+                        if (bolSaveType == 1) {
                             lgCurrTime = System.currentTimeMillis();
                             //保存数据
                             if (strCmd.equalsIgnoreCase("bb 05")) {
                                 iCurrCount = 0;
-                                iMinCount =0;
+                                iMinCount = 0;
                                 //计算数据长度
                                 String strLen = strRet.substring(6, 17);
-                                strLen = strLen.replace(" ","");
+                                strLen = strLen.replace(" ", "");
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据长度：" + strLen);
-                                iDataLen = Integer.valueOf(strLen,16);
+                                iDataLen = Integer.valueOf(strLen, 16);
                                 iMaxDataLen = iDataLen;
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据长度：" + strLen);
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据长度：" + iDataLen);
 
 
                                 strLen = strRet.substring(18, 26);
-                                strLen = strLen.replace(" ","");
+                                strLen = strLen.replace(" ", "");
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据记录：" + strLen);
-                                iDataCount = Integer.valueOf(strLen,16);
+                                iDataCount = Integer.valueOf(strLen, 16);
                                 iMaxDataCount = iDataCount;
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据记录：" + iDataCount);
 
 
-                                byte[] dataTmp = StringUtil.subBytes(data,9,data.length - 9);
+                                byte[] dataTmp = StringUtil.subBytes(data, 9, data.length - 9);
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据：" + HexUtil.formatHexString(dataTmp, true));
 
                                 //byteSave = StringUtil.byteMerger(byteSave, dataTmp);
-                                iDataLen = iDataLen -(data.length - 9);
+                                iDataLen = iDataLen - (data.length - 9);
                                 LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  数据长度：" + iDataLen);
 
                                 BleSaveItemDao _BleSaveItemDao = new BleSaveItemDao(MainActivity.this);
@@ -910,9 +989,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
-                                BleLogsItem  _BleLogsItem = new BleLogsItem();
+                                BleLogsItem _BleLogsItem = new BleLogsItem();
                                 _BleLogsItem.setLogMac(strMac);
-                                _BleLogsItem.setLogText("总数据长度：" + iMaxDataLen + ",总数据个数："+ iDataCount + ",剩余数据长度："+ iDataLen);
+                                _BleLogsItem.setLogText("总数据长度：" + iMaxDataLen + ",总数据个数：" + iDataCount + ",剩余数据长度：" + iDataLen);
                                 _BleLogsItem.setLogTime(System.currentTimeMillis());
                                 _BleLogsItemDao.add(_BleLogsItem);
 
@@ -921,25 +1000,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 handler.sendMessage(msg);
 
 
-                                if (iDataLen>0)
-                                {
+                                if (iDataLen > 0) {
                                     //获取下一条数据
                                     iCurrCount = iCurrCount + 1;
                                     String strCount = StringUtil.bytesToHexString(StringUtil.intToBytes2(iCurrCount));
                                     strCount = strCount.substring(2);
                                     LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  下一条记录数：" + strCount);
-                                    sendConnectedDevice("aa15"+strCount);
-                                }
-                                else
-                                {
+                                    sendConnectedDevice("aa15" + strCount);
+                                } else {
                                     //没有多余的数据,应该是异常数据
                                     bolSaveType = 0;
                                     btn_start_save.setText(getString(R.string.start_save));
                                     sendConnectedDevice("aa06");
                                 }
 
-                            }
-                            else if (strCmd.equalsIgnoreCase("bb 15")) {
+                            } else if (strCmd.equalsIgnoreCase("bb 15")) {
                                 {
                                     iMinCount = 0;
                                     //判断数据是否已经读完
@@ -962,7 +1037,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     BleSaveItemDao _BleSaveItemDao = new BleSaveItemDao(MainActivity.this);
                                     BleSaveItem _BleSaveItem = new BleSaveItem();
                                     _BleSaveItem.setLogMac(strMac);
-                                    _BleSaveItem.setLogOrder((iCurrCount +1) * 100);
+                                    _BleSaveItem.setLogOrder((iCurrCount + 1) * 100);
                                     _BleSaveItem.setLogText(HexUtil.formatHexString(dataTmp, false));
                                     _BleSaveItem.setLogTime(System.currentTimeMillis());
                                     _BleSaveItemDao.add(_BleSaveItem);
@@ -982,24 +1057,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     msg.arg1 = 0;
                                     handler.sendMessage(msg);
 
-                                    if (iDataLen>0)
-                                    {
+                                    if (iDataLen > 0) {
                                         //获取下一条数据
                                         iCurrCount = iCurrCount + 1;
                                         String strCount = StringUtil.bytesToHexString(StringUtil.intToBytes2(iCurrCount));
                                         strCount = strCount.substring(2);
                                         //LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  下一条记录数：" + strCount);
-                                        sendConnectedDevice("aa15"+strCount);
-                                    }
-                                    else
-                                    {
+                                        sendConnectedDevice("aa15" + strCount);
+                                    } else {
                                         QuitAndSave();
                                     }
                                 }
-                            }
-                            else {
+                            } else {
                                 //处理多次返回的数据
-                                iMinCount = iMinCount +1;
+                                iMinCount = iMinCount + 1;
                                 //LogUtil.log(TAG, "[" + TAG + "] " + strMac + " BluetoothGattCharacteristicNotify onCharacteristicChanged  处理多次返回的数据：" + iCurrCount);
                                 BleSaveItemDao _BleSaveItemDao = new BleSaveItemDao(MainActivity.this);
                                 BleSaveItem _BleSaveItem = new BleSaveItem();
@@ -1023,17 +1094,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 _BleLogsItemDao.add(_BleLogsItem);
                                 */
 
-                                if (iDataLen>0)
-                                {
+                                if (iDataLen > 0) {
 
-                                }
-                                else
-                                {
+                                } else {
                                     QuitAndSave();
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             if (strCmd.equalsIgnoreCase("bb fc")) {
                                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                                 BleLogsItem _BleLogsItem = new BleLogsItem();
@@ -1122,7 +1189,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
 
 
-
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -1193,7 +1259,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 img_loading.setVisibility(View.INVISIBLE);
                 btn_start_search.setText(getString(R.string.start_search));
                 progressDialog.dismiss();
-                Toast.makeText(MainActivity.this, bleDevice.getMac() +" " + getString(R.string.connect_fail), Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, bleDevice.getMac() + " " + getString(R.string.connect_fail), Toast.LENGTH_LONG).show();
 
                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                 BleLogsItem _BleLogsItem = new BleLogsItem();
@@ -1237,7 +1303,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.notifyDataSetChanged();
 
                 if (isActiveDisConnected) {
-                    Toast.makeText(MainActivity.this, bleDevice.getMac() +" " + getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, bleDevice.getMac() + " " + getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
                     BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                     BleLogsItem _BleLogsItem = new BleLogsItem();
                     _BleLogsItem.setLogMac(bleDevice.getMac());
@@ -1247,7 +1313,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     showLogs();
 
                 } else {
-                    Toast.makeText(MainActivity.this, bleDevice.getMac() +" " + getString(R.string.disconnected), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, bleDevice.getMac() + " " + getString(R.string.disconnected), Toast.LENGTH_LONG).show();
 
                     BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
                     BleLogsItem _BleLogsItem = new BleLogsItem();
@@ -1388,8 +1454,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Log.d("ZWW", resPath.toString());
 
             LogUtil.log(TAG, "[" + TAG + "] " + " onActivityResult " + resPath.toString());
-            if (resPath.size()>0)
-            {
+            if (resPath.size() > 0) {
                 edtxt_select_dir.setText(resPath.get(0));
             }
         }
@@ -1408,7 +1473,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //保存数据
         try {
-            FileOutputStream fos =  new FileOutputStream(f);
+            FileOutputStream fos = new FileOutputStream(f);
             LogUtil.log(TAG, "[" + TAG + "] " + " QuitAndSave " + f.getAbsolutePath());
 
             BleSaveItemDao _BleSaveItemDao = new BleSaveItemDao(MainActivity.this);
@@ -1431,7 +1496,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
             BleLogsItem _BleLogsItem = new BleLogsItem();
             _BleLogsItem.setLogMac(strSelectMac);
-            _BleLogsItem.setLogText(f.getAbsolutePath()+" 保存成功");
+            _BleLogsItem.setLogText(f.getAbsolutePath() + " 保存成功");
             _BleLogsItem.setLogTime(System.currentTimeMillis());
             _BleLogsItemDao.add(_BleLogsItem);
             showLogs();
