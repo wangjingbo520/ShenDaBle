@@ -50,6 +50,7 @@ import com.clj.blesample.comm.ObserverManager;
 import com.clj.blesample.filedirchoose.ChooseFileActivity;
 import com.clj.blesample.operation.OperationActivity;
 import com.clj.blesample.util.LogUtil;
+import com.clj.blesample.util.MathUtil;
 import com.clj.blesample.util.StringUtil;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
@@ -135,13 +136,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private static String[] MODE_CAIYANG = {"Acc+Gyr", "Acc", "Gyr"};
-    private static String[] pinlv = {"50", "100", "150", "200", "250", "300", "350", "400", "450", "500"};
-    private int mode_default = -1;
+    private static String[] pinlv = {"50Hz", "100Hz", "150Hz", "200Hz", "250Hz", "300Hz", "350Hz", "400Hz", "450Hz", "500Hz"};
+    private int mode_default = 1;
     private int pinlv_default = -1;
     AlertDialog.Builder builder;
 
-    private static String[] MODE_CODE = {"01", "02", "03"};
-    private String data_send = "";
+    private static final String DATA_START = "AABBCCA1";
+    private static final String BEGIN_UPDATA_DATA = "AABBCCA3DDEE";
+    private static final String STOP_UPDATA_DATA = "AABBCCA4DDEE";
+    private static final String STATUS_DEVICE_DATA = "AABBCCA5DDEE";
+    private static final String DEVICE_PIN_DATA = "AABBCCA7DDEE";
+    private static final String CACHU_DATA = "AABBCCA900DDEE";
+
+    //发送频率
+    private String data_pinlv = "0000";
+    //采样模式
+    private String data_caiyang = "01";
 
     Handler handler = new Handler() {
 
@@ -154,25 +164,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (msg.arg1 == 0) {
                 progressDialog.setMax(iMaxDataLen);
                 progressDialog.setProgress(iMaxDataLen - iDataLen);
-
             }
         }
 
     };
 
-    //发送的数据
-    private void sendData() {
-//        PC发MCU：
-//        AA BB CC A1 01/02/03 X1 X2 X3 X4 DD EE
-//        A1：指令号
-//        01：采样陀螺仪
-//        02：采样加速度
-//        03：采样陀螺仪+加速度
-//        X1 X2:采样频率 // 500, 250, 125, 100, 50, 20, 10
-//        X3 X4:ODR   // 500, 250, 125, 100, 50, 20, 10
-//        if (-1 != mode_default && -1 != pinlv_default) {
-//            String data = "AABBCCA1" + String.valueOf(MODE_CODE[mode_default]) +
-//        }
+    private void writeData() {
+        String data = DATA_START + data_caiyang + data_pinlv + data_pinlv;
+        Log.i("------>", data);
+        sendConnectedDevice(DATA_START + data_caiyang + data_pinlv + data_pinlv);
     }
 
     @Override
@@ -234,7 +234,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                sendConnectedDevice("aafb");
+
+                //查看pin
+                sendConnectedDevice(DEVICE_PIN_DATA);
+                // sendConnectedDevice("aafb");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -247,7 +250,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 bolSaveType = 2;
-                sendConnectedDevice("aa01");
+                //开始采数
+                String data = "AABBCCA2" + MathUtil.getDate() + "DDEE";
+                // sendConnectedDevice("aa01");
+                sendConnectedDevice(data);
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -260,7 +266,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 bolSaveType = 0;
-                sendConnectedDevice("aa02");
+                //结束采数
+                String stopData = "AABBCCA8" + MathUtil.getDate() + "DDEE";
+                sendConnectedDevice(stopData);
+                //sendConnectedDevice("aa02");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -273,7 +282,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 bolSaveType = 2;
-                sendConnectedDevice("aa03");
+                //开始上传数据
+                //  sendConnectedDevice("aa03");
+                sendConnectedDevice(BEGIN_UPDATA_DATA);
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -286,7 +297,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 bolSaveType = 0;
-                sendConnectedDevice("aa04");
+                //结束上传
+                sendConnectedDevice(STOP_UPDATA_DATA);
+                // sendConnectedDevice("aa04");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -313,7 +326,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        sendConnectedDevice("aafd");
+                                        //删除数据
+                                        sendConnectedDevice(CACHU_DATA);
+                                        // sendConnectedDevice("aafd");
                                     }
                                 })
 
@@ -330,7 +345,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                sendConnectedDevice("aafc");
+
+                //获取状态
+                sendConnectedDevice(STATUS_DEVICE_DATA);
+                // sendConnectedDevice("aafc");
                 listView_device.setVisibility(View.GONE);
                 text_logs.setVisibility(View.VISIBLE);
                 scrollView_log.setVisibility(View.VISIBLE);
@@ -565,7 +583,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 Toast.makeText(MainActivity.this, MODE_CAIYANG[mode_default], Toast.LENGTH_SHORT).show();
+                data_caiyang = MathUtil.mathMode(mode_default);
                 dialog.dismiss();
+                writeData();
             }
         });
         builder.show();
@@ -594,6 +614,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 Toast.makeText(MainActivity.this, pinlv[pinlv_default], Toast.LENGTH_SHORT).show();
+                data_pinlv = MathUtil.mathPinlv(pinlv_default);
+                dialog.dismiss();
+                writeData();
             }
         });
         builder.show();
@@ -847,6 +870,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 //addText(txt, "write success, current: " + current
                                 //        + " total: " + total
                                 //        + " justWrite: " + HexUtil.formatHexString(justWrite, true));
+                                Log.i("------>检测发送结果", HexUtil.formatHexString(justWrite, true));
                                 LogUtil.log(TAG, "[" + TAG + "] " + bleDeviceinner.getMac() + " BluetoothGattCharacteristicwrite Success " + HexUtil.formatHexString(justWrite, true));
                                 //text_logs.append(bleDeviceinner.getMac() + " " + sendHex +" 数据发送成功\n");
                                 BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
@@ -1272,6 +1296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                Log.e(TAG, "onConnectSuccess: 连接成功了");
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
