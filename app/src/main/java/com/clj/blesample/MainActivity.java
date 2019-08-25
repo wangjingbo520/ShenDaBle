@@ -1301,6 +1301,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
 
+                List<BluetoothGattService> services = gatt.getServices();
+                for (int i = 0; i < services.size(); i++) {
+                    Log.i("----->蓝牙返回的uuid" + i, services.get(i).getUuid().toString());
+
+                }
                 //BleManager.getInstance().requestConnectionPriority(bleDevice,BluetoothGatt.CONNECTION_PRIORITY_HIGH);
 
                 //strLogs.append(bleDevice.getMac() +" " + "连接成功\n");
