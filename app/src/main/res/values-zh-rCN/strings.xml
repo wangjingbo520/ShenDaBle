@@ -6,8 +6,8 @@
     <string name="setting">前往设置</string>
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
-    <string name="mode_caiyang">采样模式</string>
-    <string name="pinlv_caiyang">采样频率</string>
+    <string name="mode_caiyang">选择采样模式</string>
+    <string name="pinlv_caiyang">选择采样频率</string>
 
     <string name="delNotifyMsg">确定删除所有数据？\n删除数据等待时间大约120秒。</string>
 
@@ -46,12 +46,12 @@
     <string name="enter">查看日志</string>
 
     <string name="device_status">设备状态</string>
-    <string name="delete_data">删除数据</string>
+    <string name="delete_data">清空数据</string>
     <string name="end_uploading">结束上传</string>
 
     <string name="start_uploading">开始上传</string>
-    <string name="end_collection">结束采数</string>
-    <string name="start_collection">开始采数</string>
+    <string name="end_collection">停止采集</string>
+    <string name="start_collection">开始采集</string>
 
     <string name="start_search">开始扫描</string>
     <string name="end_search">停止扫描</string>

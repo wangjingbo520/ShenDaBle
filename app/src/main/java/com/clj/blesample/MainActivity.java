@@ -26,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -153,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //采样模式
     private String data_caiyang = "01";
 
+    private Toast toast;
     Handler handler = new Handler() {
 
         @Override
@@ -204,6 +206,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BleManager.getInstance().destroy();
     }
 
+
+    private void beginCaishu() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.notifyTitle)
+                .setMessage("采用蓝牙启动多个设备，可能存在数据不同步，建议使用PC端启动！")
+                .setNegativeButton(R.string.cancel,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                .setPositiveButton(R.string.confirm,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //开始采数
+                                bolSaveType = 2;
+                                String data = "AABBCCA2" + MathUtil.getDate() + "DDEE";
+                                // sendConnectedDevice("aa01");
+                                sendConnectedDevice(data);
+//                                listView_device.setVisibility(View.GONE);
+//                                text_logs.setVisibility(View.VISIBLE);
+//                                scrollView_log.setVisibility(View.VISIBLE);
+                            }
+                        })
+
+                .setCancelable(false)
+                .show();
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -249,14 +282,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "正在保存数据！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                bolSaveType = 2;
-                //开始采数
-                String data = "AABBCCA2" + MathUtil.getDate() + "DDEE";
-                // sendConnectedDevice("aa01");
-                sendConnectedDevice(data);
-                listView_device.setVisibility(View.GONE);
-                text_logs.setVisibility(View.VISIBLE);
-                scrollView_log.setVisibility(View.VISIBLE);
+                beginCaishu();
                 break;
 
             case R.id.btn_end_collection:
@@ -270,9 +296,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String stopData = "AABBCCA8" + MathUtil.getDate() + "DDEE";
                 sendConnectedDevice(stopData);
                 //sendConnectedDevice("aa02");
-                listView_device.setVisibility(View.GONE);
-                text_logs.setVisibility(View.VISIBLE);
-                scrollView_log.setVisibility(View.VISIBLE);
+//                listView_device.setVisibility(View.GONE);
+//                text_logs.setVisibility(View.VISIBLE);
+//                scrollView_log.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.btn_start_uploading:
@@ -334,9 +360,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         .setCancelable(false)
                         .show();
-                listView_device.setVisibility(View.GONE);
-                text_logs.setVisibility(View.VISIBLE);
-                scrollView_log.setVisibility(View.VISIBLE);
+//                listView_device.setVisibility(View.GONE);
+//                text_logs.setVisibility(View.VISIBLE);
+//                scrollView_log.setVisibility(View.VISIBLE);
                 break;
 
             case R.id.btn_device_status:
@@ -582,7 +608,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "请先选择采样模式", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(MainActivity.this, MODE_CAIYANG[mode_default], Toast.LENGTH_SHORT).show();
                 data_caiyang = MathUtil.mathMode(mode_default);
                 dialog.dismiss();
                 writeData();
@@ -613,7 +638,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "请先选择采样频率", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(MainActivity.this, pinlv[pinlv_default], Toast.LENGTH_SHORT).show();
                 data_pinlv = MathUtil.mathPinlv(pinlv_default);
                 dialog.dismiss();
                 writeData();
@@ -867,19 +891,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                showToast("操作成功");
+                                // Toast.makeText(MainActivity.this, "操作成功", Toast.LENGTH_SHORT).show();
                                 //addText(txt, "write success, current: " + current
                                 //        + " total: " + total
                                 //        + " justWrite: " + HexUtil.formatHexString(justWrite, true));
-                                Log.i("------>检测发送结果", HexUtil.formatHexString(justWrite, true));
-                                LogUtil.log(TAG, "[" + TAG + "] " + bleDeviceinner.getMac() + " BluetoothGattCharacteristicwrite Success " + HexUtil.formatHexString(justWrite, true));
+                                //  Log.i("------>检测发送结果", HexUtil.formatHexString(justWrite, true));
+                                //  LogUtil.log(TAG, "[" + TAG + "] " + bleDeviceinner.getMac() + " BluetoothGattCharacteristicwrite Success " + HexUtil.formatHexString(justWrite, true));
                                 //text_logs.append(bleDeviceinner.getMac() + " " + sendHex +" 数据发送成功\n");
-                                BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
-                                BleLogsItem _BleLogsItem = new BleLogsItem();
-                                _BleLogsItem.setLogMac(bleDeviceinner.getMac());
-                                _BleLogsItem.setLogText(sendHex + " 数据发送成功");
-                                _BleLogsItem.setLogTime(System.currentTimeMillis());
-                                _BleLogsItemDao.add(_BleLogsItem);
-                                showLogs();
+//                                BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
+//                                BleLogsItem _BleLogsItem = new BleLogsItem();
+//                                _BleLogsItem.setLogMac(bleDeviceinner.getMac());
+//                                _BleLogsItem.setLogText(sendHex + " 数据发送成功");
+//                                _BleLogsItem.setLogTime(System.currentTimeMillis());
+//                                _BleLogsItemDao.add(_BleLogsItem);
+//                                showLogs();
                             }
                         });
                     }
@@ -890,19 +916,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void run() {
                                 //addText(txt, exception.toString());
-                                LogUtil.log(TAG, "[" + TAG + "] " + bleDeviceinner.getMac() + " BluetoothGattCharacteristicwrite Failure " + exception.toString());
+                                showToast("操作失败");
+//                                Toast.makeText(MainActivity.this, "操作失败", Toast.LENGTH_SHORT).show();
+//                                LogUtil.log(TAG, "[" + TAG + "] " + bleDeviceinner.getMac() + " BluetoothGattCharacteristicwrite Failure " + exception.toString());
                                 //text_logs.append(bleDeviceinner.getMac() + " " + sendHex +" 数据发送失败\n");
-                                BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
-                                BleLogsItem _BleLogsItem = new BleLogsItem();
-                                _BleLogsItem.setLogMac(bleDeviceinner.getMac());
-                                _BleLogsItem.setLogText(sendHex + " 数据发送失败");
-                                _BleLogsItem.setLogTime(System.currentTimeMillis());
-                                _BleLogsItemDao.add(_BleLogsItem);
-                                showLogs();
+//                                BleLogsItemDao _BleLogsItemDao = new BleLogsItemDao(MainActivity.this);
+//                                BleLogsItem _BleLogsItem = new BleLogsItem();
+//                                _BleLogsItem.setLogMac(bleDeviceinner.getMac());
+//                                _BleLogsItem.setLogText(sendHex + " 数据发送失败");
+//                                _BleLogsItem.setLogTime(System.currentTimeMillis());
+//                                _BleLogsItemDao.add(_BleLogsItem);
+//                                showLogs();
                             }
                         });
                     }
                 });
+    }
+
+    private void showToast(String message) {
+        if (toast == null) {
+            toast = Toast.makeText(getApplicationContext(),
+                    message, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+        }
+
+        toast.setText(message);
+        toast.show();
     }
 
     private void BluetoothGattCharacteristicNotify(BleDevice bleDevice, BluetoothGattCharacteristic characteristic) {

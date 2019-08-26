@@ -45,12 +45,12 @@
 
 
     <string name="device_status">设备状态</string>
-    <string name="delete_data">删除数据</string>
+    <string name="delete_data">清空数据</string>
     <string name="end_uploading">结束上传</string>
 
     <string name="start_uploading">开始上传</string>
-    <string name="end_collection">结束采数</string>
-    <string name="start_collection">开始采数</string>
+    <string name="end_collection">停止采集</string>
+    <string name="start_collection">开始采集</string>
 
     <string name="start_search">开始扫描</string>
     <string name="end_search">停止扫描</string>
@@ -64,9 +64,8 @@
     <string name="select_dir">选择目录</string>
     <string name="start_save">开始保存</string>
     <string name="stop_save">停止保存</string>
-    <string name="mode_caiyang">采样模式</string>
-    <string name="pinlv_caiyang">采样频率</string>
-
+    <string name="mode_caiyang">选择采样模式</string>
+    <string name="pinlv_caiyang">选择采样频率</string>
 
 
     <string name="filechoose_app_name">FileDirChoose</string>
