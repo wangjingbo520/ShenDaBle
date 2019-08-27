@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">深大蓝牙</string>
+    <string name="app_name">SD MANAGER</string>
 
     <string name="notifyTitle">提示</string>
     <string name="gpsNotifyMsg">当前手机扫描蓝牙需要打开定位功能。</string>
